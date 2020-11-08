@@ -35,9 +35,19 @@ export default {
     '@nuxtjs/pwa',
   ],
 
+  // Server middleware (https://nuxtjs.org/docs/2.x/configuration-glossary/configuration-servermiddleware)
+  serverMiddleware: {
+    '/api': '~/api',
+  },
+
+  // Define env variables here
+  publicRuntimeConfig: {},
+
+  privateRuntimeConfig: {},
+
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
   axios: {},
 
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {},
-}
+};
