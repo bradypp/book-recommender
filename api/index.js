@@ -1,20 +1,39 @@
+// Handle any uncaught ex
+process.on('uncaughtException', err => {
+  console.log('UNCAUGHT EXCEPTION!');
+  if (process.env.NODE_ENV === 'development') {
+    console.error(err);
+  } else {
+    console.error(err.name, err.message);
+  }
+});
+
 const express = require('express');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
+const helmet = require('helmet');
 const morgan = require('morgan');
 
+const AppError = require('./utils/appError');
+const rateLimiter = require('./config/rateLimiter');
 const connectDB = require('./config/db');
+const bookRouter = require('./routes/bookRoutes');
+const errorHandler = require('./controllers/errorHandler.js');
 
 // Create express instance
 const app = express();
 
-//  API routes
-const test = require('./routes/test');
-const users = require('./routes/books');
+// Set security HTTP headers
+app.use(helmet());
 
 // Logger middleware
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
+}
+
+// Rate limiting middlewares
+if (process.env.NODE_ENV === 'production') {
+  app.use('/', rateLimiter({ maxAttempts: 200, windowMinutes: 15 }));
 }
 
 // Body-parsing & cookie parsing middlewares
@@ -26,8 +45,15 @@ app.use(mongoSanitize());
 app.use(xss());
 
 // Import API Routes
-app.use(users);
-app.use(test);
+app.use('/book', bookRouter);
+
+// Unhandled route handler
+app.all('*', (req, res, next) =>
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404)),
+);
+
+// Global error handling middleware
+app.use(errorHandler);
 
 connectDB();
 
@@ -41,3 +67,13 @@ if (require.main === module) {
     console.log(`API server listening on port ${port}`);
   });
 }
+
+// Final error handling safety net
+process.on('unhandledRejection', err => {
+  console.log('UNHANDLED REJECTION!');
+  if (process.env.NODE_ENV === 'development') {
+    console.error(err);
+  } else {
+    console.error(err.name, err.message);
+  }
+});
