@@ -48,6 +48,30 @@ export default {
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
   axios: {},
 
+  // Tailwind module configuration (https://tailwindcss.nuxtjs.org)
+  tailwindcss: {
+    cssPath: '~/styles/index.css',
+  },
+
   // Build Configuration (https://go.nuxtjs.dev/config-build)
-  build: {},
+  build: {
+    postcss: {
+      plugins: {
+        'postcss-nested': {},
+        'postcss-custom-properties': {},
+        'postcss-hexrgba': {},
+        'postcss-flexbugs-fixes': {},
+      },
+      preset: {
+        autoprefixer: {
+          flexbox: 'no-2009',
+        },
+        stage: 2,
+        features: {
+          'custom-properties': true,
+          'nesting-rules': true,
+        },
+      },
+    },
+  },
 };

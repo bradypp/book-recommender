@@ -3,12 +3,13 @@
 @import 'tailwindcss/base';
 
 /* Global Styles  */
-/* @import './base.css'; */
+@import './base.css';
 
 @import 'tailwindcss/components';
 
 /* Custom Components  */
 /* @import './components.css'; */
+/* @import './media.css'; */
 
 @import 'tailwindcss/utilities';
 
