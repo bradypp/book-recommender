@@ -1,7 +1,7 @@
-const Book = require('../models/bookModel');
-const AppError = require('../utils/appError');
+const Book = require('../models/book-model');
+const AppError = require('../utils/app-error');
 const { catchAsync } = require('../utils/helpers');
-const QueryHandler = require('./queryHandler');
+const QueryHandler = require('./query-handler');
 
 exports.getAllBooks = catchAsync(async (req, res, next) => {
   const handler = new QueryHandler(Book.find(), req.query).filter().sort().limitFields().paginate();

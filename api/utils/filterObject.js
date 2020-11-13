@@ -1,3 +1,0 @@
-const 
-
-module.exports = filterObject;

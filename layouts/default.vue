@@ -1,6 +1,6 @@
 <template>
-  <div class="max-w-1070px flex justify-center items-center min-h-screen m-auto">
-    <Nuxt keep-alive :max="20" />
+  <div class="flex justify-center items-center min-h-screen max-w-1200px m-auto">
+    <Nuxt keep-alive :max="30" />
   </div>
 </template>
 

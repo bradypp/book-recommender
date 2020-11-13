@@ -1,6 +1,9 @@
 <template>
   <div>
-    <app-books />
+    <SearchForm />
+    <!-- Search Form -->
+    <!-- Advanced options dropdown -->
+    <!-- Submit Button -->
   </div>
 </template>
 

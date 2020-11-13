@@ -8,7 +8,8 @@
     "start": "nuxt start",
     "generate": "nuxt generate",
     "lint:js": "eslint --ext .js,.vue --ignore-path .gitignore .",
-    "lint": "npm run lint:js"
+    "lint": "npm run lint:js",
+    "local-db": "mongod.exe"
   },
   "dependencies": {
     "@nuxtjs/axios": "^5.12.2",
@@ -25,7 +26,7 @@
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {
-    "@nuxtjs/eslint-config": "^3.1.0",
+    "@nuxtjs/eslint-config": "^4.0.0",
     "@nuxtjs/eslint-module": "^3.0.0",
     "@nuxtjs/tailwindcss": "^3.2.0",
     "babel-eslint": "^10.1.0",
