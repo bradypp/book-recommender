@@ -1,5 +1,5 @@
 const rateLimit = require('express-rate-limit');
-const { AppError } = require('../utils/appError');
+const { AppError } = require('../utils/app-error');
 
 const rateLimiter = (config = {}) => {
   const max = config.maxAttempts || 5;

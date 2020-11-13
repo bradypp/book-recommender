@@ -14,11 +14,11 @@ const xss = require('xss-clean');
 const helmet = require('helmet');
 const morgan = require('morgan');
 
-const AppError = require('./utils/appError');
-const rateLimiter = require('./config/rateLimiter');
+const AppError = require('./utils/app-error');
+const rateLimiter = require('./config/rate-limiter');
 const connectDB = require('./config/db');
-const bookRouter = require('./routes/bookRoutes');
-const errorHandler = require('./controllers/errorHandler.js');
+const bookRouter = require('./routes/book-routes');
+const errorHandler = require('./controllers/error-handler.js');
 
 // Create express instance
 const app = express();
