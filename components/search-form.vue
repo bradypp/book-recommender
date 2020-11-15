@@ -1,47 +1,49 @@
 <template>
-  <div class="">
-    <form class="form" @submit.prevent="submitForm">
-      <p>Search</p>
-      <input
-        class="w-40 h-8"
-        type="text"
-        name="main-search"
-        :value="mainSearch"
-        @input="onSearchInput"
-      />
-    </form>
-    <div v-for="book in searchDropdown" :key="book.id">
-      <img :src="book.coverImage" alt="..." />
-    </div>
-  </div>
+  <form class="w-full" @submit.prevent="submitForm">
+    <p>Search</p>
+    <input
+      :class="searchInputClass"
+      type="text"
+      name="main-search"
+      :value="values.search"
+      @:keyup.enter="submitForm"
+      @input="onSearchInput"
+    />
+  </form>
 </template>
 
 <script>
 import { objectToQueryString } from '@/utils/url';
 import { debounce } from 'lodash';
 
+const commonInputClass = 'border border-grey-500 rounded-3xl focus:outline-none px-2';
+
 export default {
   data() {
     return {
-      mainSearch: '',
+      values: {
+        search: '',
+      },
       searchDropdown: [],
+      searchInputClass: [commonInputClass, 'w-1/2 h-12 text-lg'],
     };
   },
   methods: {
     submitForm() {
-      // Push form values to '/explore' route as query string
+      this.$router.push({ path: 'explore', query: this.values });
     },
     onSearchInput: debounce(async function (event) {
-      this.mainSearch = event.target.value;
+      this.values.search = event.target.value;
 
       if (typeof this.onSearchInput.inputCache === 'undefined') {
         this.onSearchInput.inputCache = '';
       }
 
-      if (this.onSearchInput.inputCache !== this.mainSearch) {
+      // For search dropdown
+      if (this.onSearchInput.inputCache !== this.values.search) {
         // TODO: limit fields for what you need
         const queryString = objectToQueryString({
-          [`title[regex]`]: this.mainSearch,
+          [`title[regex]`]: this.values.search,
           sort: ['-ratingCount', '-ratingValue'],
           fields: ['title', 'authors', 'coverImage'],
           limit: 20,
@@ -49,9 +51,10 @@ export default {
         const res = await this.$nuxt.$axios.$get(
           `http://localhost:3000/api/book/all?${queryString}`,
         );
-        // TODO: filter out results with same name/isbn & keep the one with the shorter goodreadsUrl
+        // TODO: Make more queries here for other filter (e.g. author or genre regex)
+        // TODO: Filter out results with same name/isbn
         this.searchDropdown = [...res.data.books];
-        this.onSearchInput.inputCache = this.mainSearch;
+        this.onSearchInput.inputCache = this.values.search;
       }
     }, 500),
   },

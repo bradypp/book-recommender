@@ -1,7 +1,6 @@
 <template>
   <div>
     <SearchForm />
-    <!-- Search Form -->
     <!-- Advanced options dropdown -->
     <!-- Submit Button -->
   </div>

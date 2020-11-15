@@ -1,3 +1,5 @@
+import { queryStringToFilterObj } from '../utils/helpers';
+
 // Example use:
 // const user = await new QueryHandler(User.find(), req.params).filter().sort().limit().paginate().query;
 
@@ -10,51 +12,21 @@ class QueryHandler {
   }
 
   filter(...additionalExcludedFilterParams) {
-    const queryObj = { ...this.queryParams };
-    // Remove query params not wanted in filter
-    ['page', 'sort', 'limit', 'fields', ...additionalExcludedFilterParams].forEach(
-      el => delete queryObj[el],
-    );
-
-    let queryStr = JSON.stringify(queryObj);
-    // Allow filtering by gte|gt|lte|lt if they exist in queryParams by adding the mongodb $ operator
-    // E.g. localhost:5000/api/user?age[gte]=18 (filter for age > 18)
-    queryStr = queryStr.replace(
-      /\b(gte|gt|lte|lt|all|in|regex|allregex|inregex)\b/g,
-      match => `$${match}`,
-    );
-
-    const newQueryObj = JSON.parse(queryStr);
-    Object.keys(newQueryObj).forEach(a => {
-      if (newQueryObj[a].$regex) {
-        newQueryObj[a].$regex = new RegExp(newQueryObj[a].$regex, 'i');
-      }
-
-      // Turns any $in or $all queries into an array of regular expressions
-      // E.g. localhost:5000/api/profile?skills[in]=html,css becomes {skills: { $all : [/html/i, /css/i]}} as required
-      Object.keys(newQueryObj[a]).forEach(b => {
-        if (b === '$allregex') {
-          newQueryObj[a].$all = newQueryObj[a][b].split(',').map(c => new RegExp(c, 'i'));
-          delete newQueryObj[a][b];
-        }
-        if (b === '$inregex') {
-          newQueryObj[a].$in = newQueryObj[a][b].split(',').map(c => new RegExp(c, 'i'));
-          delete newQueryObj[a][b];
-        }
-      });
+    const queryObj = queryStringToFilterObj({
+      ...this.queryParams,
+      ...additionalExcludedFilterParams,
     });
-
-    this.query = this.query.find(newQueryObj);
-
+    this.query = this.query.find(queryObj);
     return this;
   }
 
   sort() {
+    console.log(this.queryParams);
     if (this.queryParams.sort) {
       // Split sort param by commas and add a space to get sort query fields
       // E.g. localhost:5000/api/user?sort=age,length (sort ascending by age then length)
       // For descending order, add a - before the field e.g. localhost:5000/api/user?sort=-age,-length
-      const sortBy = this.queryParams.sort.split(',').join(' ');
+      const sortBy = [this.queryParams.sort].flat().join(' ');
 
       this.query = this.query.sort(sortBy);
     } else {
@@ -69,7 +41,7 @@ class QueryHandler {
     if (this.queryParams.fields) {
       // Limit the fields to query and return from the database
       // E.g. localhost:5000/api/user?field=name,age (only return the name and age)
-      const fields = this.queryParams.fields.split(',').join(' ');
+      const fields = [this.queryParams.fields, '-__v'].flat().join(' ');
       // Remove the fields & the mongodb field __v
       this.query = this.query.select(`${fields}`);
     }
@@ -93,4 +65,4 @@ class QueryHandler {
   }
 }
 
-module.exports = QueryHandler;
+export default QueryHandler;

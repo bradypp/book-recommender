@@ -6,7 +6,7 @@ import { omit } from 'lodash';
 
 export const queryStringToObject = (str, options = {}) =>
   queryString.parse(str, {
-    arrayFormat: 'comma',
+    arrayFormat: 'none',
     skipNull: true,
     skipEmptyString: true,
     ...options,
@@ -14,7 +14,7 @@ export const queryStringToObject = (str, options = {}) =>
 
 export const objectToQueryString = (obj, options = {}) =>
   queryString.stringify(obj, {
-    arrayFormat: 'comma',
+    arrayFormat: 'none',
     skipNull: true,
     skipEmptyString: true,
     ...options,

@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+import { Schema, model } from 'mongoose';
 
 const options = {
   toJSON: { virtuals: true },
@@ -109,4 +109,4 @@ const bookSchema = new Schema(
 
 const Book = model('Book', bookSchema, 'books');
 
-module.exports = Book;
+export default Book;

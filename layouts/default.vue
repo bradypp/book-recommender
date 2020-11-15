@@ -1,7 +1,5 @@
 <template>
-  <div class="flex justify-center items-center min-h-screen max-w-1200px m-auto">
-    <Nuxt keep-alive :max="30" />
-  </div>
+  <Nuxt class="min-h-screen max-w-1200px m-auto block" keep-alive :keep-alive-props="{ max: 20 }" />
 </template>
 
 <style>
