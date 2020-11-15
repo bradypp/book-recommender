@@ -23,8 +23,7 @@ export const getAllBooks = catchAsync(async (req, res, next) => {
 });
 
 export const getRecommendedBooks = catchAsync(async (req, res, next) => {
-  // const goodreadsUrls = [req.body.goodreadsUrls].flat();
-  // const relatedBooksUrls = [req.body.relatedBooksUrls].flat();
+  const relatedBooksUrls = [req.body.relatedBooksUrls].flat();
   const genres = [req.body.genres].flat();
   const tags = [req.body.tags].flat();
   const seriesNumberRegex =
@@ -39,6 +38,21 @@ export const getRecommendedBooks = catchAsync(async (req, res, next) => {
     seriesNumber: { $not: seriesNumberRegex },
     ...queryStringToFilterObj({ ...req.query }),
   };
+  const fields = [
+    'goodreadsUrls',
+    'goodreadsId',
+    'relatedBooksUrls',
+    'seriesBooksUrls',
+    'genresMatchCount',
+    'tagsMatchCount',
+    'updatedAt',
+    'createdAt',
+    'reviewCount',
+    'isbn',
+    'numberOfPages',
+    'bookEdition',
+    'bookFormat',
+  ];
 
   const query = Book.aggregate([
     {
@@ -46,8 +60,7 @@ export const getRecommendedBooks = catchAsync(async (req, res, next) => {
         $or: [
           { genres: { $in: genres } },
           { tags: { $in: tags } },
-          // { goodreadsUrls: { $in: relatedBooksUrls } },
-          // { relatedBooksUrls: { $in: [...goodreadsUrls, ...relatedBooksUrls] } },
+          { goodreadsUrls: { $in: relatedBooksUrls } },
         ],
         ...filterObj,
       },
@@ -65,34 +78,41 @@ export const getRecommendedBooks = catchAsync(async (req, res, next) => {
     { $sort: { genresMatchCount: -1, tagsMatchCount: -1, ratingValue: -1 } },
     { $limit: 2000 },
     {
-      $project: {
-        title: 1,
-        coverImage: 1,
-        ratingValue: 1,
-        ratingCount: 1,
-        latestPublished: 1,
-        latestPublishedFormat: 1,
-        firstPublished: 1,
-        firstPublishedFormat: 1,
-        series: 1,
-        seriesNumber: 1,
-      },
+      $unset: [...fields, '__v'],
     },
   ]).allowDiskUse(true);
 
   const handler = new QueryHandler(query, req.query).sort().paginate();
-  const docs = await handler.query;
+  const recommendedBooks = await handler.query;
 
-  // TODO: get related books as well in separate array to be able to insert them on the front end? Or just get related books if docs array is less than a certain amount?
-  if (!docs) {
+  let relatedBooks;
+  if (!recommendedBooks || recommendedBooks.length < 50) {
+    const goodreadsUrls = [req.body.goodreadsUrls].flat();
+    const handler = new QueryHandler(
+      Book.find({
+        goodreadsUrls: { $in: relatedBooksUrls },
+        relatedBooksUrls: { $in: [...goodreadsUrls, ...relatedBooksUrls] },
+        ratingCount: {
+          $gte: 100,
+        },
+      }),
+      { sort: '-ratingValue', page: 1, limit: 50, fields: fields.map(el => '-' + el) },
+    )
+      .sort()
+      .limitFields()
+      .paginate();
+    relatedBooks = await handler.query;
+  }
+
+  if (!recommendedBooks && !relatedBooks) {
     return next(new AppError('No books found', 404));
   }
 
   res.status(200).json({
     status: 'success',
-    results: docs.length,
     data: {
-      books: docs,
+      recommendedBooks,
+      relatedBooks,
     },
   });
 });

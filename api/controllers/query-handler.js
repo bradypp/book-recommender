@@ -21,7 +21,6 @@ class QueryHandler {
   }
 
   sort() {
-    console.log(this.queryParams);
     if (this.queryParams.sort) {
       // Split sort param by commas and add a space to get sort query fields
       // E.g. localhost:5000/api/user?sort=age,length (sort ascending by age then length)
