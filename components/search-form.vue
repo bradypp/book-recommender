@@ -43,7 +43,7 @@ export default {
       if (this.onSearchInput.inputCache !== this.values.search) {
         // TODO: limit fields for what you need
         const queryString = objectToQueryString({
-          [`title[regex]`]: this.values.search,
+          search: this.values.search,
           sort: ['-ratingCount', '-ratingValue'],
           fields: ['title', 'authors', 'coverImage'],
           limit: 20,

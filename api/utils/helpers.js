@@ -24,10 +24,17 @@ export const filterObject = (obj, allowedFields) => {
   return newObj;
 };
 
-export const queryStringToFilterObj = (queryObj, ...additionalExcludedFilterParams) => {
-  ['page', 'sort', 'limit', 'fields', ...additionalExcludedFilterParams].forEach(
-    el => delete queryObj[el],
-  );
+export const isString = value => typeof value === 'string' || value instanceof String;
+export const isNumber = value => typeof value === 'number' && isFinite(value);
+
+export const isArray = value => Array.isArray(value);
+
+export const isObject = value => value && typeof value === 'object' && value.constructor === Object;
+
+export const getFilterObj = (queryObj, excludedFilterFields = [], isFilterObjPrepared = false) => {
+  ['page', 'sort', 'limit', 'fields', ...excludedFilterFields].forEach(el => delete queryObj[el]);
+
+  if (isFilterObjPrepared) return queryObj;
   let queryStr = JSON.stringify(queryObj);
 
   // Allow filtering by gte|gt|lte|lt if they exist in queryParams by adding the mongodb $ operator
@@ -37,31 +44,32 @@ export const queryStringToFilterObj = (queryObj, ...additionalExcludedFilterPara
     match => `$${match}`,
   );
 
-  const newQueryObj = JSON.parse(queryStr);
+  const filterObj = JSON.parse(queryStr);
 
-  Object.keys(newQueryObj).forEach(a => {
-    if (newQueryObj[a].$regex) {
-      newQueryObj[a].$regex = new RegExp(newQueryObj[a].$regex, 'i');
+  Object.keys(filterObj).forEach(a => {
+    if (filterObj[a].$regex) {
+      filterObj[a].$regex = new RegExp(filterObj[a].$regex, 'i');
     }
 
     ['$gte', '$gt', '$lte', '$lt'].forEach(b => {
-      if (newQueryObj[a][b]) {
-        newQueryObj[a][b] = newQueryObj[a][b] * 1;
+      if (filterObj[a][b]) {
+        filterObj[a][b] = filterObj[a][b] * 1;
       }
     });
 
     // Turns any $in or $all queries into an array of regular expressions
     // E.g. localhost:5000/api/profile?skills[in]=html,css becomes {skills: { $all : [/html/i, /css/i]}} as required
-    Object.keys(newQueryObj[a]).forEach(b => {
+    Object.keys(filterObj[a]).forEach(b => {
       if (b === '$allregex') {
-        newQueryObj[a].$all = newQueryObj[a][b].map(c => new RegExp(c, 'i'));
-        delete newQueryObj[a][b];
+        filterObj[a].$all = [filterObj[a][b]].flat().map(c => new RegExp(c, 'i'));
+        delete filterObj[a][b];
       }
       if (b === '$inregex') {
-        newQueryObj[a].$in = newQueryObj[a][b].map(c => new RegExp(c, 'i'));
-        delete newQueryObj[a][b];
+        filterObj[a].$in = [filterObj[a][b]].flat().map(c => new RegExp(c, 'i'));
+        delete filterObj[a][b];
       }
     });
   });
-  return newQueryObj;
+
+  return filterObj;
 };

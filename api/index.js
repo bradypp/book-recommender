@@ -29,6 +29,7 @@ app.use(helmet());
 // Logger middleware
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
+  // app.use(morgan('combined'));
 }
 
 // Rate limiting middlewares
