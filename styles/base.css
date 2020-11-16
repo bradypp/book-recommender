@@ -1,18 +1,13 @@
 html,
 body {
-  width: 100%;
-  max-width: 100%;
+  @apply min-w-full w-full;
 }
 
 body {
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
-  overflow-x: hidden;
+  @apply min-h-screen antialiased overflow-x-hidden text-md text-grey-cool-800 font-primary;
 }
 
 a {
-  display: inline-block;
-  text-decoration: none;
+  @apply inline-block no-underline;
   text-decoration-skip-ink: auto;
 }

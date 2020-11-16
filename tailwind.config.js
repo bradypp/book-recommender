@@ -34,7 +34,7 @@ module.exports = {
     fontFamily: {
       primary:
         'Oswald, -apple-system, "Helvetica Neue", "Segoe UI", Roboto, Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
-      secondary: 'Domine, Georgia, Cambria, "Times New Roman", Times, serif',
+      secondary: ' Georgia, Cambria, "Times New Roman", Times, serif',
     },
     opacity: {
       0: '0',
@@ -54,7 +54,6 @@ module.exports = {
     },
     borderRadius: {
       0: '0',
-      '3px': '3px',
       sm: '0.125rem',
       default: '0.25rem',
       md: '0.375rem',
@@ -62,6 +61,7 @@ module.exports = {
       xl: '0.75rem',
       '2xl': '1rem',
       '3xl': '1.25rem',
+      '4xl': '1.5rem',
       full: '9999px',
       '50%': '50%',
     },
@@ -106,6 +106,9 @@ module.exports = {
       '6xl': ['4rem', { lineHeight: '1' }],
     },
     extend: {
+      outline: {
+        blue: ['1px dotted #0000ff', '1px'],
+      },
       spacing: {
         28: '7rem',
         36: '9rem',

@@ -1,3 +1,15 @@
+import express from 'express';
+import mongoSanitize from 'express-mongo-sanitize';
+import xss from 'xss-clean';
+import helmet from 'helmet';
+import morgan from 'morgan';
+
+import AppError from './utils/app-error';
+import rateLimiter from './config/rate-limiter';
+import connectDB from './config/db';
+import bookRouter from './routes/book-routes';
+import errorHandler from './controllers/error-handler.js';
+
 // Handle any uncaught ex
 process.on('uncaughtException', err => {
   console.log('UNCAUGHT EXCEPTION!');
@@ -8,18 +20,6 @@ process.on('uncaughtException', err => {
   }
 });
 
-const express = require('express');
-const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss-clean');
-const helmet = require('helmet');
-const morgan = require('morgan');
-
-const AppError = require('./utils/app-error');
-const rateLimiter = require('./config/rate-limiter');
-const connectDB = require('./config/db');
-const bookRouter = require('./routes/book-routes');
-const errorHandler = require('./controllers/error-handler.js');
-
 // Create express instance
 const app = express();
 
@@ -29,6 +29,7 @@ app.use(helmet());
 // Logger middleware
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
+  // app.use(morgan('combined'));
 }
 
 // Rate limiting middlewares

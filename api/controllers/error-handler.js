@@ -1,4 +1,4 @@
-const AppError = require('../utils/app-error');
+import AppError from '../utils/app-error';
 
 const handleCastErrorDB = err => {
   const message = `Invalid ${err.path}: ${err.value}.`;
@@ -88,7 +88,7 @@ const sendErrorProd = (err, req, res) => {
   });
 };
 
-const apiErrorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res, next) => {
   let error;
 
   // Handle and send validation errors
@@ -122,4 +122,4 @@ const apiErrorHandler = (err, req, res, next) => {
   }
 };
 
-module.exports = apiErrorHandler;
+export default errorHandler;
