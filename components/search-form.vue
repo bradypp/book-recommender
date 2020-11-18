@@ -16,7 +16,7 @@
 import { objectToQueryString } from '@/utils/url';
 import { debounce } from 'lodash';
 
-const commonInputClass = 'border border-grey-500 rounded-3xl focus:outline-none px-2';
+const commonInputClass = 'border border-grey-500 rounded-full focus:outline-none px-2';
 
 export default {
   data() {

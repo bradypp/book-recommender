@@ -1,13 +1,15 @@
-html,
-body {
-  @apply min-w-full w-full;
-}
+@layer base {
+  html,
+  body {
+    @apply min-w-full w-full;
+  }
 
-body {
-  @apply min-h-screen antialiased overflow-x-hidden text-md text-grey-cool-800 font-primary;
-}
+  body {
+    @apply min-h-screen antialiased overflow-x-hidden text-base text-gray-800 font-sans;
+  }
 
-a {
-  @apply inline-block no-underline;
-  text-decoration-skip-ink: auto;
+  a {
+    @apply inline-block no-underline;
+    text-decoration-skip-ink: auto;
+  }
 }

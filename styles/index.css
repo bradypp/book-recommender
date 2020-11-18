@@ -1,15 +1,14 @@
-/* @import './variables.css'; */
-
 @import 'tailwindcss/base';
 
-/* Global Styles  */
+/* Base Styles  */
+/* @import './variables.css'; */
+
 @import './base.css';
 
 @import 'tailwindcss/components';
 
 /* Custom Components  */
 /* @import './components.css'; */
-/* @import './media.css'; */
 
 @import 'tailwindcss/utilities';
 
@@ -17,3 +16,6 @@
 /* @import './utilities.css'; */
 
 @import 'tailwindcss/screens';
+
+/* Media Queries */
+/* @import './media.css'; */

@@ -1,3 +1,5 @@
+import path from 'path';
+
 export default {
   // Global page headers (https://go.nuxtjs.dev/config-head)
   head: {
@@ -11,7 +13,7 @@ export default {
   },
 
   // Global CSS (https://go.nuxtjs.dev/config-css)
-  css: [],
+  css: ['~/styles/index.css'],
 
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
   plugins: [],
@@ -23,8 +25,6 @@ export default {
   buildModules: [
     // https://go.nuxtjs.dev/eslint
     '@nuxtjs/eslint-module',
-    // https://go.nuxtjs.dev/tailwindcss
-    '@nuxtjs/tailwindcss',
   ],
 
   // Modules (https://go.nuxtjs.dev/config-modules)
@@ -48,15 +48,11 @@ export default {
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
   axios: {},
 
-  // Tailwind module configuration (https://tailwindcss.nuxtjs.org)
-  tailwindcss: {
-    cssPath: '~/styles/index.css',
-  },
-
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {
     postcss: {
       plugins: {
+        tailwindcss: path.resolve(__dirname, './tailwind.config.js'),
         'postcss-nested': {},
         'postcss-custom-properties': {},
         'postcss-hexrgba': {},
@@ -66,7 +62,7 @@ export default {
         autoprefixer: {
           flexbox: 'no-2009',
         },
-        stage: 2,
+        stage: 1,
         features: {
           'custom-properties': true,
           'nesting-rules': true,
