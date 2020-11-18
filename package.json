@@ -32,6 +32,7 @@
     "helmet": "^4.2.0",
     "mongoose": "^5.10.13",
     "morgan": "^1.10.0",
+    "normalize.css": "^8.0.1",
     "postcss-custom-properties": "^10.0.0",
     "postcss-flexbugs-fixes": "^4.2.1",
     "postcss-hexrgba": "^2.0.1",

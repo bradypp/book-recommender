@@ -32,11 +32,12 @@ module.exports = {
         black: '#000',
         white: '#fff',
       },
-    },
-    maxWidth: {
-      'max-w-screen-md': `${media.md}px`,
-      'max-w-screen-lg': `${media.lg}px`,
-      'max-w-screen-xl': `${media.xl}px`,
+      maxWidth: {
+        'screen-sm': `${media.sm}px`,
+        'screen-md': `${media.md}px`,
+        'screen-lg': `${media.lg}px`,
+        'screen-xl': `${media.xl}px`,
+      },
     },
   },
   variants: {
