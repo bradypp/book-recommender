@@ -13,10 +13,10 @@ class QueryHandler {
     this.queryObj = queryObj;
   }
 
-  filter(excludedFilterFields, isFilterObjPrepared) {
+  filter(options = { excludedFilterFields: [], isFilterObjPrepared: false }) {
     // console.log(this.queryObj.$or[0]['$regex']);
 
-    const filterObj = getFilterObj({ ...this.queryObj }, excludedFilterFields, isFilterObjPrepared);
+    const filterObj = getFilterObj({ ...this.queryObj }, options);
 
     if (!isEmpty(filterObj)) {
       this.query = this.query.find(filterObj);
