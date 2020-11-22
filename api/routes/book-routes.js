@@ -1,12 +1,12 @@
 import express from 'express';
 
-import * as bookController from '../controllers/book-controller';
+import bookController from '../controllers/book-controller';
+import booksRouter from './books-routes';
 
 const router = express.Router();
 
-router.get('/all', bookController.getAllBooks);
-router.get('/search', bookController.getSearchedForBooks);
-router.get('/related', bookController.prepareRelatedBooksSearch, bookController.getAllBooks);
-router.get('/recommended', bookController.getRecommendedBooks);
+router.use('/:id/books', bookController.getBookData, booksRouter);
+
+router.get('/:id', bookController.getBookData, bookController.sendBookData);
 
 export default router;

@@ -13,7 +13,6 @@
 </template>
 
 <script>
-import { objectToQueryString } from '@/utils/url';
 import { debounce } from 'lodash';
 
 const commonInputClass = 'border border-grey-500 rounded-full focus:outline-none px-2';
@@ -41,18 +40,9 @@ export default {
 
       // For search dropdown
       if (this.onSearchInput.inputCache !== this.values.search) {
-        // TODO: limit fields for what you need
-        const queryString = objectToQueryString({
-          search: this.values.search,
-          sort: ['-ratingCount', '-ratingValue'],
-          fields: ['title', 'authors', 'coverImage'],
-          limit: 20,
-        });
         const res = await this.$nuxt.$axios.$get(
-          `http://localhost:3000/api/book/all?${queryString}`,
+          `http://localhost:3000/api/books/search?search=${this.values.search}`,
         );
-        // TODO: Make more queries here for other filter (e.g. author or genre regex)
-        // TODO: Filter out results with same name/isbn
         this.searchDropdown = [...res.data.books];
         this.onSearchInput.inputCache = this.values.search;
       }

@@ -8,6 +8,7 @@ import AppError from './utils/app-error';
 import rateLimiter from './config/rate-limiter';
 import connectDB from './config/db';
 import bookRouter from './routes/book-routes';
+import booksRouter from './routes/books-routes';
 import errorHandler from './controllers/error-handler.js';
 
 // Handle any uncaught ex
@@ -46,6 +47,7 @@ app.use(xss());
 
 // Import API Routes
 app.use('/book', bookRouter);
+app.use('/books', booksRouter);
 
 // Unhandled route handler
 app.all('*', (req, res, next) =>

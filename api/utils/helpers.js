@@ -31,15 +31,13 @@ export const isArray = value => Array.isArray(value);
 
 export const isObject = value => value && typeof value === 'object' && value.constructor === Object;
 
-export const getFilterObj = (
-  queryObj,
-  options = { excludedFilterFields: [], isFilterObjPrepared: false },
-) => {
-  ['page', 'sort', 'limit', 'fields', ...options.excludedFilterFields].forEach(
-    el => delete queryObj[el],
-  );
+export const getFilterObj = (queryObj, options = {}) => {
+  const excludedFilterFields = options.excludedFilterFields || [];
+  const isFilterObjPrepared = options.isFilterObjPrepared || false;
 
-  if (options.isFilterObjPrepared) return queryObj;
+  ['page', 'sort', 'limit', 'fields', ...excludedFilterFields].forEach(el => delete queryObj[el]);
+
+  if (isFilterObjPrepared) return queryObj;
   let queryStr = JSON.stringify(queryObj);
 
   // Allow filtering by gte|gt|lte|lt if they exist in queryParams by adding the mongodb $ operator
