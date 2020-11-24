@@ -1,13 +1,20 @@
 <template>
-  <form class="w-full" @submit.prevent="submitForm">
-    <p>Search</p>
+  <form
+    class="w-1/2 flex justify-center mt-20 relative"
+    @submit.prevent="submitForm(searchDropdown[0]._id)"
+  >
     <input
-      :class="searchInputClass"
+      class="border border-grey-500 rounded-full focus:outline-none px-4 w-full h-12 text-lg"
       type="text"
       name="main-search"
       :value="values.search"
-      @:keyup.enter="submitForm"
+      @:keyup.enter="submitForm(searchDropdown[0]._id)"
       @input="onSearchInput"
+    />
+    <SearchDropdown
+      :books="searchDropdown"
+      :is-loading="dropdownIsLoading"
+      @choose-book="submitForm"
     />
   </form>
 </template>
@@ -15,8 +22,7 @@
 <script>
 import { debounce } from 'lodash';
 
-const commonInputClass = 'border border-grey-500 rounded-full focus:outline-none px-2';
-
+// TODO: Allow search by search term or submitting usses currently selected from dropdown (by tabbing through and highlighting/focussing)
 export default {
   data() {
     return {
@@ -24,27 +30,37 @@ export default {
         search: '',
       },
       searchDropdown: [],
-      searchInputClass: [commonInputClass, 'w-1/2 h-12 text-lg'],
+      dropdownIsLoading: true,
     };
   },
   methods: {
-    submitForm() {
-      this.$router.push({ path: 'explore', query: this.values });
+    submitForm(id) {
+      this.$router.push({ path: 'explore', query: { id } });
     },
-    onSearchInput: debounce(async function (event) {
+    onSearchInput(event) {
       this.values.search = event.target.value;
-
+      this.getSearchDropdownBooks(this.values.search);
+    },
+    getSearchDropdownBooks: debounce(async function (search) {
       if (typeof this.onSearchInput.inputCache === 'undefined') {
         this.onSearchInput.inputCache = '';
       }
 
       // For search dropdown
-      if (this.onSearchInput.inputCache !== this.values.search) {
-        const res = await this.$nuxt.$axios.$get(
-          `http://localhost:3000/api/books/search?search=${this.values.search}`,
-        );
-        this.searchDropdown = [...res.data.books];
-        this.onSearchInput.inputCache = this.values.search;
+      if (this.onSearchInput.inputCache !== search) {
+        this.dropdownIsLoading = true;
+        try {
+          const res = await this.$nuxt.$axios.$get(
+            `http://localhost:3000/api/books/search?search=${search}`,
+          );
+          this.searchDropdown = [...res.data.books];
+          this.dropdownIsLoading = false;
+          this.onSearchInput.inputCache = search;
+        } catch (err) {
+          this.searchDropdown = [];
+          this.dropdownIsLoading = false;
+          this.onSearchInput.inputCache = '';
+        }
       }
     }, 500),
   },

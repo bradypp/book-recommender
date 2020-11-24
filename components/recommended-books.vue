@@ -11,9 +11,14 @@ export default {
   fetchOnServer: false,
   async fetch() {
     const queryString = objectToQueryString(this.$route.query);
-    const res = await this.$nuxt.$axios.$get(`http://localhost:3000/api/book/all?${queryString}`);
-    console.log(res.data);
-    this.books = res.data.books;
+    try {
+      const res = await this.$nuxt.$axios.$get(
+        `http://localhost:3000/api/books/recommended?${queryString}`,
+      );
+      this.books = res.data.books;
+    } catch (err) {
+      console.log(err);
+    }
   },
   data() {
     return { books: [] };

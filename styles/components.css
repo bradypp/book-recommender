@@ -1,0 +1,5 @@
+@layer components {
+  .container {
+    @apply min-h-screen max-w-screen-xl xl:max-w-screen-lg lg:max-w-screen-md md:max-w-screen-sm sm:max-w-full mx-auto px-4;
+  }
+}

@@ -26,9 +26,7 @@ export const filterObject = (obj, allowedFields) => {
 
 export const isString = value => typeof value === 'string' || value instanceof String;
 export const isNumber = value => typeof value === 'number' && isFinite(value);
-
 export const isArray = value => Array.isArray(value);
-
 export const isObject = value => value && typeof value === 'object' && value.constructor === Object;
 
 export const getFilterObj = (queryObj, options = {}) => {
@@ -43,13 +41,17 @@ export const getFilterObj = (queryObj, options = {}) => {
   // Allow filtering by gte|gt|lte|lt if they exist in queryParams by adding the mongodb $ operator
   // E.g. localhost:5000/api/user?age[gte]=18 (filter for age > 18)
   queryStr = queryStr.replace(
-    /\b(gte|gt|lte|lt|all|in|regex|allregex|inregex)\b/g,
+    /\b(gte|gt|lte|lt|all|in|nin|not|ninregex|regex|allregex|inregex)\b/g,
     match => `$${match}`,
   );
 
   const filterObj = JSON.parse(queryStr);
 
   Object.keys(filterObj).forEach(a => {
+    if (filterObj[a].$not) {
+      filterObj[a].$not = new RegExp(filterObj[a].$not, 'i');
+    }
+
     if (filterObj[a].$regex) {
       filterObj[a].$regex = new RegExp(filterObj[a].$regex, 'i');
     }
@@ -69,6 +71,10 @@ export const getFilterObj = (queryObj, options = {}) => {
       }
       if (b === '$inregex') {
         filterObj[a].$in = [filterObj[a][b]].flat().map(c => new RegExp(c, 'i'));
+        delete filterObj[a][b];
+      }
+      if (b === '$ninregex') {
+        filterObj[a].$nin = [filterObj[a][b]].flat().map(c => new RegExp(c, 'i'));
         delete filterObj[a][b];
       }
     });
