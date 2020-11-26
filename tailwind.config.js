@@ -25,6 +25,11 @@ module.exports = {
       xs: { max: `${media.xs}px` },
       '2xs': { max: `${media['2xs']}px` },
     },
+    fontFamily: {
+      primary: '"Roboto Slab", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
+      secondary:
+        'Nunito, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+    },
     extend: {
       colors: {
         transparent: 'transparent',
@@ -37,6 +42,9 @@ module.exports = {
         'screen-md': `${media.md}px`,
         'screen-lg': `${media.lg}px`,
         'screen-xl': `${media.xl}px`,
+      },
+      scale: {
+        115: '1.15',
       },
     },
   },
