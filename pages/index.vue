@@ -1,11 +1,11 @@
 <template>
-  <div>
+  <main>
     <section class="w-full flex justify-center items-center">
       <SearchForm />
     </section>
     <!-- Advanced options dropdown -->
     <!-- Submit Button -->
-  </div>
+  </main>
 </template>
 
 <script>

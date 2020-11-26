@@ -1,9 +1,10 @@
 <template>
-  <div>
-    <!-- Form on the left, prepopulate values from this.$route.query -->
-    <!-- List on the right, load recommended books using this.$route.query -->
+  <main class="flex relative">
+    <div class="sticky top-20 w-3/12">
+      <h2>Form</h2>
+    </div>
     <RecommendedBooks />
-  </div>
+  </main>
 </template>
 
 <script>

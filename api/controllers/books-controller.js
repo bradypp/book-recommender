@@ -3,6 +3,7 @@ import AppError from '../utils/app-error';
 import { catchAsync, getFilterObj } from '../utils/helpers';
 import QueryHandler from './query-handler';
 
+// TODO Also filter duplicate firstPublished dates if they have the same author
 const removeDuplicates = (arr, exclusionsArr = []) => {
   return arr.filter((el, i, arr) => {
     return (
@@ -12,7 +13,25 @@ const removeDuplicates = (arr, exclusionsArr = []) => {
             (el2.title && el.title && el2.title.startsWith(el.title)) ||
             (el2._id && el._id && el2._id === el._id) ||
             (el2.isbn && el.isbn && el2.isbn === el.isbn) ||
-            (el2.goodreadsId && el.goodreadsId && el2.goodreadsId === el.goodreadsId)
+            (el2.goodreadsId && el.goodreadsId && el2.goodreadsId === el.goodreadsId) ||
+            (el2.descriptionHTML &&
+              el.descriptionHTML &&
+              el2.firstPublished &&
+              el.firstPublished &&
+              el2.authors &&
+              el.authors &&
+              el2.firstPublished === el.firstPublished &&
+              el.authors.some(el3 => el2.includes(el3)) &&
+              el2.descriptionHTML.length >= el.descriptionHTML.length) ||
+            (el2.descriptionHTML &&
+              el.descriptionHTML &&
+              el2.latestPublished &&
+              el.latestPublished &&
+              el2.authors &&
+              el.authors &&
+              el2.latestPublished === el.latestPublished &&
+              el.authors.some(el3 => el2.includes(el3)) &&
+              el2.descriptionHTML.length >= el.descriptionHTML.length)
           );
         }) &&
       exclusionsArr.findIndex(
@@ -245,21 +264,18 @@ const getRecommendedBooks = catchAsync(async (req, res, next) => {
     ),
   };
 
-  const genresLength = genres.length;
-  const tagsLength = tags.length;
-
   const topGenres =
-    genresLength < 5
+    genres.length < 5
       ? genres
-      : genresLength < 8 || genresLength > 4
-      ? genres.slice(0, Math.floor(genresLength * 0.8))
-      : genres.slice(0, Math.floor(genresLength * 0.66));
+      : genres.length < 8 || genres.length > 4
+      ? genres.slice(0, Math.floor(genres.length * 0.8))
+      : genres.slice(0, Math.floor(genres.length * 0.66));
   const topTags =
-    tagsLength < 5
+    tags.length < 5
       ? tags
-      : tagsLength < 11 || tagsLength > 4
-      ? tags.slice(0, Math.floor(tagsLength * 0.8))
-      : tags.slice(0, Math.floor(tagsLength * 0.66));
+      : tags.length < 11 || tags.length > 4
+      ? tags.slice(0, Math.floor(tags.length * 0.8))
+      : tags.slice(0, Math.floor(tags.length * 0.66));
 
   const genresMatchFilterNumber = Math.floor(topGenres.length * 0.8);
   const tagsMatchFilterNumber = Math.floor(topTags.length * 0.5);
@@ -307,6 +323,7 @@ const getRecommendedBooks = catchAsync(async (req, res, next) => {
           },
         },
       },
+      // TODO This should depend on the size of both the genres arrays, some books might have less genres than the filter number altogether. The filter number should be at max the min of both arrays (minimum of 3).
       {
         $match: {
           genresMatchCount: {
@@ -384,7 +401,6 @@ const getRecommendedBooks = catchAsync(async (req, res, next) => {
   const skip = (page - 1) * limit;
 
   const books = removeDuplicates([...genresBooks, ...relatedBooks])
-    .filter(el => !!el.descriptionHTML)
     .sort((a, b) => {
       if (querySort.startsWith('-')) {
         const sort = querySort.replace('-', '');
@@ -399,6 +415,8 @@ const getRecommendedBooks = catchAsync(async (req, res, next) => {
         return acc;
       }, {});
     });
+
+  // TODO If no results redo automatically with smaller restrictions?
 
   if (!books || books.length === 0) {
     return next(new AppError('No books found', 404));
