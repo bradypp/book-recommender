@@ -38,13 +38,11 @@ module.exports = {
         white: '#fff',
       },
       maxWidth: {
+        screen: '100vw',
         'screen-sm': `${media.sm}px`,
         'screen-md': `${media.md}px`,
         'screen-lg': `${media.lg}px`,
         'screen-xl': `${media.xl}px`,
-      },
-      scale: {
-        115: '1.15',
       },
     },
   },

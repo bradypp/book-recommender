@@ -34,7 +34,7 @@ export default {
   },
   methods: {
     submitForm(id) {
-      this.$router.push({ path: 'explore', query: { id } });
+      this.$router.push({ path: 'recommended', query: { id } });
     },
     onSearchInput(event) {
       this.showDropdown = true;

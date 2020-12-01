@@ -5,7 +5,7 @@
   }
 
   body {
-    @apply min-h-screen antialiased overflow-x-hidden text-base text-gray-800 font-primary;
+    @apply min-h-screen max-w-screen antialiased overflow-x-hidden text-base text-gray-800 font-primary;
   }
 
   a {
