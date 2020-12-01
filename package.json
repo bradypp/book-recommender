@@ -39,7 +39,7 @@
     "postcss-flexbugs-fixes": "^4.2.1",
     "postcss-hexrgba": "^2.0.1",
     "postcss-nested": "^4.2.3",
-    "prettier": "^2.1.2",
+    "prettier": "^2.2.1",
     "stylelint-config-standard": "^20.0.0"
   }
 }
