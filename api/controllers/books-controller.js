@@ -1,49 +1,7 @@
 import Book from '../models/book-model';
 import AppError from '../utils/app-error';
-import { catchAsync, getFilterObj } from '../utils/helpers';
+import { catchAsync, getFilterObj, removeDuplicates } from '../utils/helpers';
 import QueryHandler from './query-handler';
-
-// TODO Also filter duplicate firstPublished dates if they have the same author
-const removeDuplicates = (arr, exclusionsArr = []) => {
-  return arr.filter((el, i, arr) => {
-    return (
-      i ===
-        arr.findIndex(el2 => {
-          return (
-            (el2.title && el.title && el2.title.startsWith(el.title)) ||
-            (el2._id && el._id && el2._id === el._id) ||
-            (el2.isbn && el.isbn && el2.isbn === el.isbn) ||
-            (el2.goodreadsId && el.goodreadsId && el2.goodreadsId === el.goodreadsId) ||
-            (el2.descriptionHTML &&
-              el.descriptionHTML &&
-              el2.firstPublished &&
-              el.firstPublished &&
-              el2.authors &&
-              el.authors &&
-              el2.firstPublished === el.firstPublished &&
-              el.authors.some(el3 => el2.includes(el3)) &&
-              el2.descriptionHTML.length >= el.descriptionHTML.length) ||
-            (el2.descriptionHTML &&
-              el.descriptionHTML &&
-              el2.latestPublished &&
-              el.latestPublished &&
-              el2.authors &&
-              el.authors &&
-              el2.latestPublished === el.latestPublished &&
-              el.authors.some(el3 => el2.includes(el3)) &&
-              el2.descriptionHTML.length >= el.descriptionHTML.length)
-          );
-        }) &&
-      exclusionsArr.findIndex(
-        el2 =>
-          (el2.title && el.title && el2.title.startsWith(el.title)) ||
-          (el2._id && el._id && el2._id === el._id) ||
-          (el2.isbn && el.isbn && el2.isbn === el.isbn) ||
-          (el2.goodreadsId && el.goodreadsId && el2.goodreadsId === el.goodreadsId),
-      ) === -1
-    );
-  });
-};
 
 const getBooks = catchAsync(async (req, res, next) => {
   const { query, excludedFilterFields, isFilterObjPrepared } = req;
@@ -76,8 +34,6 @@ const getSearchedForBooks = catchAsync(async (req, res, next) => {
 
   const searchRegex = new RegExp(req.query.search, 'i');
   const limit = req.query.limit * 1 || 15;
-  // const page = req.query.page * 1 || 1;
-  // const skip = (page - 1) * limit;
   const sort = '-ratingCount';
   const searchedForFields = req.query.fields || [
     '_id',
@@ -88,29 +44,6 @@ const getSearchedForBooks = catchAsync(async (req, res, next) => {
     'seriesNumber',
   ];
   const foundBooks = req.body.foundBooks || [];
-
-  // const docs =
-  //   (await Book.find({ title: { $regex: searchRegex } })
-  //     .sort(sort)
-  //     .select(select)
-  //     .skip(skip)
-  //     .limit(limit)) || [];
-
-  // docs.push(
-  //   ...((await Book.find({ series: { $in: [searchRegex] } })
-  //     .sort(sort)
-  //     .select(select)
-  //     .skip(skip)
-  //     .limit(limit)) || []),
-  // );
-
-  // docs.push(
-  //   ...((await Book.find({ authors: { $in: [searchRegex] } })
-  //     .sort(sort)
-  //     .select(select)
-  //     .skip(skip)
-  //     .limit(limit)) || []),
-  // );
 
   const docs =
     (await Book.find({ title: { $regex: searchRegex } })
@@ -236,7 +169,7 @@ const getRecommendedBooks = catchAsync(async (req, res, next) => {
     includeSameSeries = false,
     ...queryObj
   } = req.query;
-  const { genres, tags, relatedBooksUrls, goodreadsUrls, authors, series } = bookData;
+  const { genres, tags, authors, series } = bookData;
 
   const commonFilters = {
     descriptionHTML: {
@@ -338,69 +271,69 @@ const getRecommendedBooks = catchAsync(async (req, res, next) => {
       { $limit: 1000 },
     ]).allowDiskUse(true)) || [];
 
-  const relatedBooks =
-    (await Book.aggregate([
-      {
-        $match: {
-          $or: [
-            { goodreadsUrls: { $in: relatedBooksUrls } },
-            { relatedBooksUrls: { $in: [...goodreadsUrls, ...relatedBooksUrls] } },
-          ],
-          ...commonFilters,
-        },
-      },
-      {
-        $addFields: {
-          topGenres: {
-            $slice: ['$genres', 0, 8],
-          },
-          topTags: {
-            $slice: ['$tags', 0, 10],
-          },
-        },
-      },
-      {
-        $addFields: {
-          genresMatchCount: {
-            $size: {
-              $ifNull: [
-                {
-                  $setIntersection: [topGenres, '$topGenres'],
-                },
-                [],
-              ],
-            },
-          },
-          tagsMatchCount: {
-            $size: {
-              $ifNull: [
-                {
-                  $setIntersection: [topTags, '$topTags'],
-                },
-                [],
-              ],
-            },
-          },
-        },
-      },
-      {
-        $match: {
-          genresMatchCount: {
-            $gte: genresMatchFilterNumber,
-          },
-          tagsMatchCount: {
-            $gte: tagsMatchFilterNumber,
-          },
-        },
-      },
-    ])) || [];
+  // const relatedBooks =
+  //   (await Book.aggregate([
+  //     {
+  //       $match: {
+  //         $or: [
+  //           { goodreadsUrls: { $in: relatedBooksUrls } },
+  //           { relatedBooksUrls: { $in: [...goodreadsUrls, ...relatedBooksUrls] } },
+  //         ],
+  //         ...commonFilters,
+  //       },
+  //     },
+  //     {
+  //       $addFields: {
+  //         topGenres: {
+  //           $slice: ['$genres', 0, 8],
+  //         },
+  //         topTags: {
+  //           $slice: ['$tags', 0, 10],
+  //         },
+  //       },
+  //     },
+  //     {
+  //       $addFields: {
+  //         genresMatchCount: {
+  //           $size: {
+  //             $ifNull: [
+  //               {
+  //                 $setIntersection: [topGenres, '$topGenres'],
+  //               },
+  //               [],
+  //             ],
+  //           },
+  //         },
+  //         tagsMatchCount: {
+  //           $size: {
+  //             $ifNull: [
+  //               {
+  //                 $setIntersection: [topTags, '$topTags'],
+  //               },
+  //               [],
+  //             ],
+  //           },
+  //         },
+  //       },
+  //     },
+  //     {
+  //       $match: {
+  //         genresMatchCount: {
+  //           $gte: genresMatchFilterNumber,
+  //         },
+  //         tagsMatchCount: {
+  //           $gte: tagsMatchFilterNumber,
+  //         },
+  //       },
+  //     },
+  //   ])) || [];
 
   const querySort = queryObj.sort || '-ratingCount';
   const limit = queryObj.limit * 1 || 100;
   const page = queryObj.page * 1 || 1;
   const skip = (page - 1) * limit;
 
-  const books = removeDuplicates([...genresBooks, ...relatedBooks])
+  const books = removeDuplicates(genresBooks)
     .sort((a, b) => {
       if (querySort.startsWith('-')) {
         const sort = querySort.replace('-', '');

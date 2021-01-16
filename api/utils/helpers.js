@@ -82,3 +82,45 @@ export const getFilterObj = (queryObj, options = {}) => {
 
   return filterObj;
 };
+
+// TODO Also filter duplicate firstPublished dates if they have the same author
+export const removeDuplicates = (arr, exclusionsArr = []) => {
+  return arr.filter((el, i, arr) => {
+    return (
+      i ===
+        arr.findIndex(el2 => {
+          return (
+            (el2.title && el.title && el2.title.startsWith(el.title)) ||
+            (el2._id && el._id && el2._id === el._id) ||
+            (el2.isbn && el.isbn && el2.isbn === el.isbn) ||
+            (el2.goodreadsId && el.goodreadsId && el2.goodreadsId === el.goodreadsId) ||
+            (el2.descriptionHTML &&
+              el.descriptionHTML &&
+              el2.firstPublished &&
+              el.firstPublished &&
+              el2.authors &&
+              el.authors &&
+              el2.firstPublished === el.firstPublished &&
+              el.authors.some(el3 => el2.includes(el3)) &&
+              el2.descriptionHTML.length >= el.descriptionHTML.length) ||
+            (el2.descriptionHTML &&
+              el.descriptionHTML &&
+              el2.latestPublished &&
+              el.latestPublished &&
+              el2.authors &&
+              el.authors &&
+              el2.latestPublished === el.latestPublished &&
+              el.authors.some(el3 => el2.includes(el3)) &&
+              el2.descriptionHTML.length >= el.descriptionHTML.length)
+          );
+        }) &&
+      exclusionsArr.findIndex(
+        el2 =>
+          (el2.title && el.title && el2.title.startsWith(el.title)) ||
+          (el2._id && el._id && el2._id === el._id) ||
+          (el2.isbn && el.isbn && el2.isbn === el.isbn) ||
+          (el2.goodreadsId && el.goodreadsId && el2.goodreadsId === el.goodreadsId),
+      ) === -1
+    );
+  });
+};

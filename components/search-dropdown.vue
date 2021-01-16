@@ -1,16 +1,14 @@
 <template>
-  <div class="w-full absolute top-full left-0 min-h-full">
-    <div v-if="isLoading">lodaing...</div>
+  <div class="w-full absolute top-full left-0 min-h-full shadow-md rounded-b-md pt-1 -mt-1">
+    <div v-if="isLoading">loading...</div>
     <div v-else-if="!isLoading && books.length === 0">no books found</div>
-    <ul v-else>
-      <li
+    <ul v-else class="h-72 overflow-y-scroll transition-all book-list">
+      <SearchDropdownItem
         v-for="book in books"
         :key="book._id"
-        class="w-full h-8 cursor-pointer"
-        @click="$emit('choose-book', book._id)"
-      >
-        {{ book.title }}
-      </li>
+        :book="book"
+        @choose-book="$emit('choose-book', book._id)"
+      />
     </ul>
   </div>
 </template>
@@ -20,7 +18,7 @@ export default {
   props: {
     isLoading: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     books: {
       type: Array,
@@ -29,3 +27,23 @@ export default {
   },
 };
 </script>
+
+<style lang="postcss" scoped>
+.book-list {
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #666;
+  }
+}
+</style>

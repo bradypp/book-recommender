@@ -13,7 +13,7 @@ export default {
   },
 
   // Global CSS (https://go.nuxtjs.dev/config-css)
-  css: ['~/styles/index.css'],
+  css: ['@/styles/index.css'],
 
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
   plugins: [],
@@ -37,7 +37,7 @@ export default {
 
   // Server middleware (https://nuxtjs.org/docs/2.x/configuration-glossary/configuration-servermiddleware)
   serverMiddleware: {
-    '/api': '~/api',
+    '/api': '@/api',
   },
 
   // Define env variables here

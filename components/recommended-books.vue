@@ -6,11 +6,12 @@
 
 <script>
 import { objectToQueryString } from '@/utils/url';
+// TODO Make height fit content
 
-// TODO Extract each book into its own components to make event handling easier for each item. Use refs and computed properties to set active popup using js instead of css hover states.
 export default {
   fetchOnServer: false,
   async fetch() {
+    this.books = [];
     const queryString = objectToQueryString(this.$route.query);
     try {
       const res = await this.$nuxt.$axios.$get(
@@ -24,6 +25,8 @@ export default {
   data() {
     return {
       books: [],
+      page: 1,
+      limit: 30,
     };
   },
   watch: {
