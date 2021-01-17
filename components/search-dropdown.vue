@@ -1,5 +1,7 @@
 <template>
-  <div class="w-full absolute top-full left-0 min-h-full shadow-md rounded-b-md pt-1 -mt-1">
+  <div
+    class="w-full absolute top-full left-0 min-h-full shadow-md rounded-md overflow-hidden mt-1 border border-grey-500"
+  >
     <div v-if="isLoading">loading...</div>
     <div v-else-if="!isLoading && books.length === 0">no books found</div>
     <ul v-else class="h-72 overflow-y-scroll transition-all book-list">

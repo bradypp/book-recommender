@@ -33,6 +33,8 @@ export default {
     '@nuxtjs/axios',
     // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
+    // https://content.nuxtjs.org/
+    '@nuxt/content',
   ],
 
   // Server middleware (https://nuxtjs.org/docs/2.x/configuration-glossary/configuration-servermiddleware)
@@ -47,6 +49,9 @@ export default {
 
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
   axios: {},
+
+  // Content module configuration (https://content.nuxtjs.org/configuration)
+  content: {},
 
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {

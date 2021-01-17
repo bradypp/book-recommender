@@ -6,13 +6,17 @@
 
 <script>
 import { objectToQueryString } from '@/utils/url';
-// TODO Make height fit content
+// Add text saying what tihs recommendation is based off
 
 export default {
   fetchOnServer: false,
   async fetch() {
     this.books = [];
-    const queryString = objectToQueryString(this.$route.query);
+    const queryString = objectToQueryString({
+      id: this.$route.query.id,
+      page: this.$route.query.page || 1,
+      limit: this.$route.query.limit || 30,
+    });
     try {
       const res = await this.$nuxt.$axios.$get(
         `http://localhost:3000/api/books/recommended?${queryString}`,
@@ -25,8 +29,6 @@ export default {
   data() {
     return {
       books: [],
-      page: 1,
-      limit: 30,
     };
   },
   watch: {

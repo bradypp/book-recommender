@@ -24,11 +24,6 @@
 
 <script>
 import { debounce } from 'lodash';
-
-// Put event on document to listen for a click on any element.
-// Check if event.target !== element you want to ignore (searchdropdown & input)
-// If true, call event handler
-
 // TODO Move input & it's dropdown into it's own component (create a select component?) so that the events are scoped to each component
 // TODO: Allow search by search term or submitting book currently selected from dropdown (by tabbing through and highlighting/focussing)
 export default {

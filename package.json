@@ -12,6 +12,7 @@
     "local-db": "mongod.exe"
   },
   "dependencies": {
+    "@nuxt/content": "^1.11.1",
     "@nuxtjs/axios": "^5.12.2",
     "@nuxtjs/pwa": "^3.0.2",
     "core-js": "^3.6.5",
