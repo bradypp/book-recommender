@@ -12,6 +12,9 @@ export default {
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
 
+  // https://nuxtjs.org/docs/2.x/features/loading/
+  loading: false,
+
   // Global CSS (https://go.nuxtjs.dev/config-css)
   css: ['@/styles/index.css'],
 
@@ -37,6 +40,12 @@ export default {
     '@nuxt/content',
   ],
 
+  // Axios module configuration (https://go.nuxtjs.dev/config-axios)
+  axios: {},
+
+  // Content module configuration (https://content.nuxtjs.org/configuration)
+  content: {},
+
   // Server middleware (https://nuxtjs.org/docs/2.x/configuration-glossary/configuration-servermiddleware)
   serverMiddleware: {
     '/api': '@/api',
@@ -46,12 +55,6 @@ export default {
   publicRuntimeConfig: {},
 
   privateRuntimeConfig: {},
-
-  // Axios module configuration (https://go.nuxtjs.dev/config-axios)
-  axios: {},
-
-  // Content module configuration (https://content.nuxtjs.org/configuration)
-  content: {},
 
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {

@@ -1,5 +1,6 @@
 import Book from '../models/book-model';
 import AppError from '../utils/app-error';
+import { filteredAuthors } from '../utils/blacklist';
 import { catchAsync, getFilterObj, removeDuplicates } from '../utils/helpers';
 import QueryHandler from './query-handler';
 
@@ -46,13 +47,19 @@ const getSearchedForBooks = catchAsync(async (req, res, next) => {
   const foundBooks = req.body.foundBooks || [];
 
   const docs =
-    (await Book.find({ title: { $regex: searchRegex } })
+    (await Book.find({
+      title: { $regex: searchRegex },
+      authors: { $nin: filteredAuthors },
+    })
       .sort(sort)
       .limit(limit)) || [];
 
   if (docs.length < limit) {
     docs.push(
-      ...((await Book.find({ series: { $in: [searchRegex] } })
+      ...((await Book.find({
+        series: { $in: [searchRegex] },
+        authors: { $nin: filteredAuthors },
+      })
         .sort(sort)
         .limit(limit - docs.length)) || []),
     );
@@ -60,7 +67,9 @@ const getSearchedForBooks = catchAsync(async (req, res, next) => {
 
   if (docs.length < limit) {
     docs.push(
-      ...((await Book.find({ authors: { $in: [searchRegex] } })
+      ...((await Book.find({
+        authors: { $in: [searchRegex] },
+      })
         .sort(sort)
         .limit(limit - docs.length)) || []),
     );
@@ -116,12 +125,12 @@ const getSeriesNumberFilter = seriesNumber => {
   switch (seriesNumber) {
     case 'none':
       return { series: null, seriesNumber: null };
-    case 'first or none':
-      return { $or: [{ seriesNumber: { $not: /^(?!(?:1)$)\d+/ } }, { seriesNumber: null }] };
     case 'first':
       return { seriesNumber: { $not: /^(?!(?:1)$)\d+/ } };
-    case 'any':
+    case 'first or none':
+      return { $or: [{ seriesNumber: { $not: /^(?!(?:1)$)\d+/ } }, { seriesNumber: null }] };
     default:
+    case 'any':
       return { $or: [{ seriesNumber: { $regex: /.+/ } }, { seriesNumber: null }] };
   }
 };
@@ -164,7 +173,7 @@ const getRecommendedBooks = catchAsync(async (req, res, next) => {
   );
 
   const {
-    seriesNumberType = 'any',
+    seriesNumberType,
     includeSameAuthors = false,
     includeSameSeries = false,
     ...queryObj
@@ -364,6 +373,17 @@ const getRecommendedBooks = catchAsync(async (req, res, next) => {
   });
 });
 
+const getGenres = catchAsync(async (req, res) => {
+  const genres = await Book.distinct('genres');
+  res.status(200).json({
+    status: 'success',
+    results: genres.length,
+    data: {
+      genres,
+    },
+  });
+});
+
 const prepareRelatedBooksSearch = (req, res, next) => {
   const { relatedBooksUrls, goodreadsUrls } = req.bookData;
   const { seriesNumberType, ...queryObj } = req.query;
@@ -392,4 +412,5 @@ export default {
   getSearchedForBooks,
   getRecommendedBooks,
   prepareRelatedBooksSearch,
+  getGenres,
 };

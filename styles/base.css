@@ -12,4 +12,18 @@
     @apply inline-block no-underline;
     text-decoration-skip-ink: auto;
   }
+
+  input,
+  textarea {
+    &::placeholder {
+      @apply opacity-50 italic text-sm;
+    }
+
+    &:focus,
+    &:active {
+      &::placeholder {
+        @apply opacity-40;
+      }
+    }
+  }
 }

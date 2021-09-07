@@ -37,13 +37,21 @@ module.exports = {
         black: '#000',
         white: '#fff',
       },
+      width: {
+        42: '10.5rem',
+      },
+      height: {
+        68: '17rem',
+      },
       maxWidth: {
         screen: '100vw',
         'screen-sm': `${media.sm}px`,
         'screen-md': `${media.md}px`,
         'screen-lg': `${media.lg}px`,
         'screen-xl': `${media.xl}px`,
+        ...theme => theme('width'),
       },
+      minHeight: theme => theme('height'),
     },
   },
   variants: {

@@ -1,7 +1,7 @@
 <template>
   <main>
     <section class="w-full flex justify-center items-center">
-      <SearchForm />
+      <BookSearchForm />
     </section>
     <!-- Advanced options dropdown -->
     <!-- Submit Button -->

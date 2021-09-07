@@ -13,5 +13,6 @@ router.get(
   booksController.getBooks,
 );
 router.get('/recommended', booksController.getBookDataFromIds, booksController.getRecommendedBooks);
+router.get('/genres', booksController.getGenres);
 
 export default router;

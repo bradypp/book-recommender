@@ -3,9 +3,5 @@
 </template>
 
 <script>
-export default {
-  mounted() {
-    console.log(this.$route.params.id.split('-')[0]);
-  },
-};
+export default {};
 </script>
