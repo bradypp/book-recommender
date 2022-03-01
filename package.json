@@ -39,7 +39,7 @@
     "postcss-hexrgba": "^2.0.1",
     "postcss-nested": "^4.2.3",
     "prettier": "^2.1.2",
-    "stylelint-config-recommended": "^3.0.0",
+    "stylelint-config-recommended": "^7.0.0",
     "tailwindcss": "^2.0.1-compat",
     "xss-clean": "^0.1.1"
   }
