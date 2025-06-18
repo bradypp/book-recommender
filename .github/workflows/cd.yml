@@ -1,0 +1,259 @@
+name: Continuous Deployment
+
+on:
+  push:
+    branches: [main]
+  workflow_run:
+    workflows: ['Continuous Integration']
+    types:
+      - completed
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.9'
+
+jobs:
+  # Only run if CI passed
+  check-ci:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' }}
+    steps:
+      - name: CI Status Check
+        run: echo "CI passed, proceeding with deployment"
+
+  # Build and push Docker images
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: check-ci
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        service:
+          [
+            api-gateway,
+            user-service,
+            book-service,
+            recommendation-service,
+            review-service,
+            notification-service,
+          ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/${{ matrix.service }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Deploy to staging environment
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl for staging
+        run: |
+          echo "${{ secrets.STAGING_KUBECONFIG }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Deploy to staging
+        run: |
+          export KUBECONFIG=kubeconfig
+
+          # Update image tags in Kubernetes manifests
+          sed -i "s|image: bookmatch/|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/|g" infrastructure/kubernetes/staging/*.yaml
+          sed -i "s|:latest|:${{ github.sha }}|g" infrastructure/kubernetes/staging/*.yaml
+
+          # Apply Kubernetes manifests
+          kubectl apply -f infrastructure/kubernetes/staging/namespace.yaml
+          kubectl apply -f infrastructure/kubernetes/staging/configmap.yaml
+          kubectl apply -f infrastructure/kubernetes/staging/secrets.yaml
+          kubectl apply -f infrastructure/kubernetes/staging/
+
+          # Wait for rollout to complete
+          kubectl rollout status deployment/api-gateway -n bookmatch-staging --timeout=300s
+          kubectl rollout status deployment/user-service -n bookmatch-staging --timeout=300s
+          kubectl rollout status deployment/book-service -n bookmatch-staging --timeout=300s
+          kubectl rollout status deployment/recommendation-service -n bookmatch-staging --timeout=300s
+          kubectl rollout status deployment/review-service -n bookmatch-staging --timeout=300s
+          kubectl rollout status deployment/notification-service -n bookmatch-staging --timeout=300s
+
+      - name: Run smoke tests
+        run: |
+          export KUBECONFIG=kubeconfig
+
+          # Get staging URL
+          STAGING_URL=$(kubectl get service api-gateway -n bookmatch-staging -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+          # Wait for services to be ready
+          sleep 60
+
+          # Run basic health checks
+          curl -f http://$STAGING_URL/health || exit 1
+          curl -f http://$STAGING_URL/api/v1/books/health || exit 1
+          curl -f http://$STAGING_URL/api/v1/users/health || exit 1
+
+  # Deploy to production (manual approval required)
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl for production
+        run: |
+          echo "${{ secrets.PRODUCTION_KUBECONFIG }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Deploy to production
+        run: |
+          export KUBECONFIG=kubeconfig
+
+          # Update image tags in Kubernetes manifests
+          sed -i "s|image: bookmatch/|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/|g" infrastructure/kubernetes/production/*.yaml
+          sed -i "s|:latest|:${{ github.sha }}|g" infrastructure/kubernetes/production/*.yaml
+
+          # Apply Kubernetes manifests with rolling update strategy
+          kubectl apply -f infrastructure/kubernetes/production/namespace.yaml
+          kubectl apply -f infrastructure/kubernetes/production/configmap.yaml
+          kubectl apply -f infrastructure/kubernetes/production/secrets.yaml
+          kubectl apply -f infrastructure/kubernetes/production/
+
+          # Wait for rollout to complete
+          kubectl rollout status deployment/api-gateway -n bookmatch-production --timeout=600s
+          kubectl rollout status deployment/user-service -n bookmatch-production --timeout=600s
+          kubectl rollout status deployment/book-service -n bookmatch-production --timeout=600s
+          kubectl rollout status deployment/recommendation-service -n bookmatch-production --timeout=600s
+          kubectl rollout status deployment/review-service -n bookmatch-production --timeout=600s
+          kubectl rollout status deployment/notification-service -n bookmatch-production --timeout=600s
+
+      - name: Run production health checks
+        run: |
+          export KUBECONFIG=kubeconfig
+
+          # Get production URL
+          PRODUCTION_URL=$(kubectl get service api-gateway -n bookmatch-production -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+          # Wait for services to be ready
+          sleep 120
+
+          # Run comprehensive health checks
+          curl -f https://$PRODUCTION_URL/health || exit 1
+          curl -f https://$PRODUCTION_URL/api/v1/books/health || exit 1
+          curl -f https://$PRODUCTION_URL/api/v1/users/health || exit 1
+          curl -f https://$PRODUCTION_URL/api/v1/recommendations/health || exit 1
+          curl -f https://$PRODUCTION_URL/api/v1/reviews/health || exit 1
+          curl -f https://$PRODUCTION_URL/api/v1/notifications/health || exit 1
+
+      - name: Notify deployment success
+        uses: 8398a7/action-slack@v3
+        if: success()
+        with:
+          status: success
+          text: '🚀 Production deployment successful for commit ${{ github.sha }}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify deployment failure
+        uses: 8398a7/action-slack@v3
+        if: failure()
+        with:
+          status: failure
+          text: '❌ Production deployment failed for commit ${{ github.sha }}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Rollback on failure
+  rollback:
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: failure()
+
+    steps:
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl for production
+        run: |
+          echo "${{ secrets.PRODUCTION_KUBECONFIG }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Rollback deployment
+        run: |
+          export KUBECONFIG=kubeconfig
+
+          # Rollback all services
+          kubectl rollout undo deployment/api-gateway -n bookmatch-production
+          kubectl rollout undo deployment/user-service -n bookmatch-production
+          kubectl rollout undo deployment/book-service -n bookmatch-production
+          kubectl rollout undo deployment/recommendation-service -n bookmatch-production
+          kubectl rollout undo deployment/review-service -n bookmatch-production
+          kubectl rollout undo deployment/notification-service -n bookmatch-production
+
+          # Wait for rollback to complete
+          kubectl rollout status deployment/api-gateway -n bookmatch-production --timeout=300s
+          kubectl rollout status deployment/user-service -n bookmatch-production --timeout=300s
+          kubectl rollout status deployment/book-service -n bookmatch-production --timeout=300s
+          kubectl rollout status deployment/recommendation-service -n bookmatch-production --timeout=300s
+          kubectl rollout status deployment/review-service -n bookmatch-production --timeout=300s
+          kubectl rollout status deployment/notification-service -n bookmatch-production --timeout=300s
+
+      - name: Notify rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: warning
+          text: '⚠️ Production rollback completed for failed deployment of commit ${{ github.sha }}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

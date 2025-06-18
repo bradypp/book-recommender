@@ -9,8 +9,58 @@
         "testStrategy": "Verify the repository structure and ensure that GitHub Actions are triggered on commits.",
         "priority": "medium",
         "dependencies": [],
-        "status": "pending",
-        "subtasks": []
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Initialize Git Repository",
+            "description": "Set up a new Git repository for the project.",
+            "dependencies": [],
+            "details": "Use the command `git init` in the project directory to initialize a new Git repository.",
+            "status": "done"
+          },
+          {
+            "id": 2,
+            "title": "Configure Repository Structure for Microservices",
+            "description": "Organize the repository to accommodate a microservice architecture.",
+            "dependencies": [
+              1
+            ],
+            "details": "Create separate directories for each microservice within the repository, ensuring clear separation and modularity.",
+            "status": "done"
+          },
+          {
+            "id": 3,
+            "title": "Add a README File",
+            "description": "Create a README file to provide an overview of the project.",
+            "dependencies": [
+              1
+            ],
+            "details": "Include project description, setup instructions, and usage guidelines in the `README.md` file.",
+            "status": "done"
+          },
+          {
+            "id": 4,
+            "title": "Set Up GitHub Actions for Continuous Integration",
+            "description": "Configure GitHub Actions to automate testing and integration processes.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Create a workflow file in `.github/workflows/` directory to define CI tasks such as running tests and building the project.",
+            "status": "done"
+          },
+          {
+            "id": 5,
+            "title": "Set Up GitHub Actions for Continuous Deployment",
+            "description": "Configure GitHub Actions to automate deployment processes.",
+            "dependencies": [
+              4
+            ],
+            "details": "Extend the workflow file to include deployment steps, such as deploying to a cloud service or server.",
+            "status": "done"
+          }
+        ]
       },
       {
         "id": 2,
@@ -145,7 +195,7 @@
     ],
     "metadata": {
       "created": "2025-06-18T10:50:00.155Z",
-      "updated": "2025-06-18T10:50:00.155Z",
+      "updated": "2025-06-18T14:39:07.379Z",
       "description": "Tasks for master context"
     }
   }
